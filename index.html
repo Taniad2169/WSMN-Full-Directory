@@ -429,7 +429,7 @@
           <button class="btn" type="submit" id="dir-submit">Search <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
         </form>
         <p class="dir-hint">Tip: type a city, a ZIP code, or both (for example “Fort Myers 33901”). Leave it blank to see everyone in the state.</p>
-        <div class="rw-invite"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face" aria-hidden="true">R</div><p><b>Not sure who to choose?</b> Chat with <b>Rachel WebSwan</b>. Answer a few quick questions and she will narrow the directory down to your best matches.</p></div><button class="btn" type="button" data-open-rachel>Talk to Rachel <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+        <div class="rw-invite"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face" aria-hidden="true">R</div><p><b>Want a more custom search?</b> Chat with <b>Rachel WebSwan</b>. Answer a few quick questions and she will narrow the directory down to your 3 to 5 best matches. <b>Want a broader list?</b> Use the search fields on this page and you will see up to 100 results to choose from.</p></div><button class="btn" type="button" data-open-rachel>Talk to Rachel <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
         <div id="dir-out" aria-live="polite"></div>
         <p class="dir-note">Listings in the WebSwan Media Network Directory are paid advertisements (sponsored listings) from independent professionals. WebSwan Media Network does not provide medical or legal advice, does not endorse or refer any professional, and does not guarantee results. Please verify licenses with your state medical board or state bar before hiring. In a medical emergency, call 911.</p>
       </div>
@@ -1025,11 +1025,11 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     const where = (locRaw ? esc(locRaw) + ', ' : '') + esc(stateName(st));
     let html = '';
     if (exact.length) {
-      html += `<p class="dir-status">${exact.length} ${exact.length === 1 ? 'result' : 'results'} for ${esc(what)} in ${where}</p><div class="dir-results">${exact.map(card).join('')}</div>`;
+      html += `<p class="dir-status">${exact.length} ${exact.length === 1 ? 'result' : 'results'} for ${esc(what)} in ${where}${exact.length > 100 ? ' (showing the first 100)' : ''}</p><div class="dir-results">${exact.slice(0, 100).map(card).join('')}</div>${exact.length > 100 ? '<p class="dir-note">There are more than 100 matches. Add a city or ZIP code to narrow it down, or <b>ask Rachel WebSwan</b> to pick your best matches.</p>' : ''}`;
     } else {
       html += `<div class="dir-empty"><h3>No results for ${esc(what)} in ${where} yet</h3><p>${(zip || city) && rows.length ? 'Try clearing the city/ZIP box to see everyone in ' + esc(stateName(st)) + ', or ' : 'Try '}choosing a broader specialty. New professionals join the WebSwan Media Network Directory every week.</p></div>`;
     }
-    if (nearby.length) html += `<p class="dir-status" style="margin-top:26px">Nearby in ${esc(stateName(st))}</p><div class="dir-results">${nearby.map(card).join('')}</div>`;
+    if (nearby.length) html += `<p class="dir-status" style="margin-top:26px">Nearby in ${esc(stateName(st))}</p><div class="dir-results">${nearby.slice(0, 100).map(card).join('')}</div>`;
     out.innerHTML = html;
   }
   form.addEventListener('submit', e => { e.preventDefault(); runSearch(); });
