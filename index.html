@@ -1021,6 +1021,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     </article>`;
   }
 
+  const MAX_SELF = 20; // visitors searching on their own see up to 20 results; Rachel narrows it to the 5 best
   async function runSearch() {
     const t = typeSel.value, s = specSel.value, st = stateSel.value, cityRaw = cityIn.value.trim(), zipRaw = zipIn.value.trim();
     if (!t) { out.innerHTML = '<p class="dir-status">Please choose Doctors or Attorneys first.</p>'; typeSel.focus(); return; }
@@ -1067,11 +1068,12 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     const where = esc(cityRaw) + ', ' + esc(stateName(st)) + ' ' + esc(zipRaw);
     let html = '';
     if (exact.length) {
-      html += `<p class="dir-status">${exact.length} ${exact.length === 1 ? 'result' : 'results'} for ${esc(what)} in ${where}${exact.length > 100 ? ' (showing the first 100)' : ''}</p><div class="dir-results">${exact.slice(0, 100).map(card).join('')}</div>${exact.length > 100 ? '<p class="dir-note">There are more than 100 matches. Add a city or ZIP code to narrow it down, or <b>ask Rachel WebSwan</b> to pick your best matches.</p>' : ''}`;
+      html += `<p class="dir-status">${exact.length} ${exact.length === 1 ? 'result' : 'results'} for ${esc(what)} in ${where}${exact.length > MAX_SELF ? ` (showing the closest ${MAX_SELF})` : ''}</p><div class="dir-results">${exact.slice(0, MAX_SELF).map(card).join('')}</div>${exact.length > MAX_SELF ? `<p class="dir-note">You can see up to ${MAX_SELF} results when you search on your own. For your <b>5 best matches</b>, <b>ask Rachel WebSwan</b>: she asks what matters most to you and picks for you.</p>` : ''}`;
     } else {
       html += `<div class="dir-empty"><h3>No results for ${esc(what)} in ${where} yet</h3><p>${rows.length ? 'See the closest professionals in ' + esc(stateName(st)) + ' below, or try ' : 'Try '}choosing a broader specialty. New professionals join the WebSwan Media Network Directory every week.</p></div>`;
     }
-    if (nearby.length) html += `<p class="dir-status" style="margin-top:26px">${exact.length ? 'More' : 'Closest'} in ${esc(stateName(st))}, nearest to ${esc(zipRaw)} first</p><div class="dir-results">${nearby.slice(0, 100).map(card).join('')}</div>`;
+    const room = Math.max(0, MAX_SELF - Math.min(exact.length, MAX_SELF));
+    if (nearby.length && room) html += `<p class="dir-status" style="margin-top:26px">${exact.length ? 'More' : 'Closest'} in ${esc(stateName(st))}, nearest to ${esc(zipRaw)} first</p><div class="dir-results">${nearby.slice(0, room).map(card).join('')}</div>`;
     if (exact.length + nearby.length > 1) html = `<div class="rw-invite" style="margin:0 0 6px"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face" aria-hidden="true">R</div><p><b>Too many to choose from?</b> Rachel WebSwan already has your city, state and ZIP. Answer a few quick questions and she will pick your <b>5 best matches</b>.</p></div><button class="btn" type="button" data-rachel-from-search>Let Rachel pick my 5</button></div>` + html;
     out.innerHTML = html;
   }
@@ -1376,6 +1378,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       matchOf: (m, n) => `Matches ${m} of ${n}`, missing: 'Doesn’t have',
       topWhy: x => `Picked because you said <b>${x}</b> matters most, and they have it.`,
       closeWhy: 'Picked because they are close to you.',
+      askTop: w => `What are the <b>3 most important things</b> you’re looking for in a ${w}? Tap your <b>#1</b> first.`,
+      askTopN: n => `Got it! What’s your <b>#${n}</b>? (or tap “That’s all”)`, topDone: 'That’s all', andW: ' and ',
+      basedOn: (list, w, k) => `Based on what is important for you (<b>${list}</b>), this is why I chose these ${w}. They are in order from best match to good match. Click any of the ${k} links to view their profile.`,
       yourMatches: 'Your matches (tap a name to open the profile; the others stay right here for you):',
       startOver: 'Start over', whySay: 'Why I picked them: ',
       cFree: 'Searching the WebSwan Media Network directory and chatting with me is <b>completely free</b> for you. Each doctor or attorney sets the fees for their own services, so please ask their office directly.', cAbout: 'WebSwan Media Network is a directory of <b>doctors and attorneys</b>. Tell me what you need and where you are, and I’ll find you about 3 to 5 good matches with their phone number and profile.', cWsmn: 'WSMN stands for <b>WebSwan Media Network</b>, our advertising platform.',
@@ -1414,6 +1419,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       matchOf: (m, n) => `Remplit ${m} critère${m === 1 ? '' : 's'} sur ${n}`, missing: 'N’a pas',
       topWhy: x => `Choisi parce que vous avez dit que <b>${x}</b> compte le plus, et ce professionnel l’offre.`,
       closeWhy: 'Choisi parce que ce professionnel est proche de vous.',
+      askTop: w => `Quelles sont les <b>3 choses les plus importantes</b> pour vous chez un ${w} ? Touchez d’abord votre <b>n° 1</b>.`,
+      askTopN: n => `Noté ! Quel est votre <b>n° ${n}</b> ? (ou touchez « C’est tout »)`, topDone: 'C’est tout', andW: ' et ',
+      basedOn: (list, w, k) => `Selon ce qui est important pour vous (<b>${list}</b>), voici pourquoi j’ai choisi ces ${w}. Ils sont classés du meilleur choix au bon choix. Cliquez sur l’un des ${k} liens pour voir leur profil.`,
       yourMatches: 'Vos résultats (touchez un nom pour ouvrir le profil ; les autres restent ici) :',
       startOver: 'Recommencer', whySay: 'Pourquoi ce choix : ',
       cFree: 'Chercher dans l’annuaire WebSwan Media Network et discuter avec moi est <b>entièrement gratuit</b> pour vous. Chaque médecin ou avocat fixe ses propres honoraires : renseignez-vous directement auprès de son cabinet.', cAbout: 'WebSwan Media Network est un annuaire de <b>médecins et d’avocats</b>. Dites-moi ce dont vous avez besoin et où vous êtes, et je vous trouve environ 3 à 5 bons choix avec leur numéro et leur profil.', cWsmn: 'WSMN signifie <b>WebSwan Media Network</b>, notre plateforme publicitaire.',
@@ -1453,6 +1461,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       matchOf: (m, n) => `Cumple ${m} de ${n}`, missing: 'No tiene',
       topWhy: x => `Elegido porque usted dijo que <b>${x}</b> es lo más importante, y lo tiene.`,
       closeWhy: 'Elegido porque está cerca de usted.',
+      askTop: w => `¿Cuáles son las <b>3 cosas más importantes</b> que busca en un ${w}? Toque primero su <b>n.º 1</b>.`,
+      askTopN: n => `¡Entendido! ¿Cuál es su <b>n.º ${n}</b>? (o toque “Eso es todo”)`, topDone: 'Eso es todo', andW: ' y ',
+      basedOn: (list, w, k) => `Según lo que es importante para usted (<b>${list}</b>), por eso elegí a estos ${w}. Están en orden de la mejor opción a una buena opción. Haga clic en cualquiera de los ${k} enlaces para ver su perfil.`,
       yourMatches: 'Sus resultados (toque un nombre para abrir el perfil; los demás siguen aquí):',
       startOver: 'Empezar de nuevo', whySay: 'Por qué lo recomiendo: ',
       cFree: 'Buscar en el directorio de WebSwan Media Network y conversar conmigo es <b>totalmente gratis</b> para usted. Cada médico o abogado pone el precio de sus propios servicios, así que pregúntele directamente a su oficina.', cAbout: 'WebSwan Media Network es un directorio de <b>médicos y abogados</b>. Dígame qué necesita y dónde está, y le encuentro entre 3 y 5 buenas opciones con su teléfono y su perfil.', cWsmn: 'WSMN significa <b>WebSwan Media Network</b>, nuestra plataforma de publicidad.',
@@ -1492,6 +1503,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       matchOf: (m, n) => `Atende ${m} de ${n}`, missing: 'Não tem',
       topWhy: x => `Escolhido porque você disse que <b>${x}</b> é o mais importante, e ele tem.`,
       closeWhy: 'Escolhido porque fica perto de você.',
+      askTop: w => `Quais são as <b>3 coisas mais importantes</b> que você procura num ${w}? Toque primeiro no seu <b>nº 1</b>.`,
+      askTopN: n => `Anotado! Qual é o seu <b>nº ${n}</b>? (ou toque em “Só isso”)`, topDone: 'Só isso', andW: ' e ',
+      basedOn: (list, w, k) => `Com base no que é importante pra você (<b>${list}</b>), foi por isso que escolhi estes ${w}. Eles estão em ordem da melhor opção para uma boa opção. Clique em qualquer um dos ${k} links para ver o perfil.`,
       yourMatches: 'Seus resultados (toque num nome para abrir o perfil; os outros continuam aqui):',
       startOver: 'Começar de novo', whySay: 'Por que indiquei: ',
       cFree: 'Buscar no diretório da WebSwan Media Network e conversar comigo é <b>totalmente grátis</b> para você. Cada médico ou advogado define o valor dos próprios serviços, então pergunte direto no consultório ou escritório.', cAbout: 'A WebSwan Media Network é um diretório de <b>médicos e advogados</b>. Me diga o que você precisa e onde está, e eu encontro de 3 a 5 boas opções com o telefone e o perfil de cada um.', cWsmn: 'WSMN significa <b>WebSwan Media Network</b>, a nossa plataforma de anúncios.',
@@ -1531,6 +1545,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       matchOf: (m, n) => `Genyen ${m} sou ${n}`, missing: 'Pa genyen',
       topWhy: x => `Mwen chwazi l paske ou di <b>${x}</b> se sa ki pi enpòtan, epi li genyen l.`,
       closeWhy: 'Mwen chwazi l paske li pre w.',
+      askTop: w => `Ki <b>3 bagay ki pi enpòtan</b> pou ou lè w ap chèche yon ${w}? Peze <b>nimewo 1</b> ou an anvan.`,
+      askTopN: n => `Dakò! Kisa ki <b>nimewo ${n}</b> ou? (oswa peze “Se tout”)`, topDone: 'Se tout', andW: ' ak ',
+      basedOn: (list, w, k) => `Dapre sa ki enpòtan pou ou (<b>${list}</b>), se pou sa m chwazi ${w} sa yo. Yo ranje soti nan pi bon chwa a rive nan bon chwa. Klike sou nenpòt nan ${k} lyen yo pou w wè pwofil yo.`,
       yourMatches: 'Rezilta ou yo (peze yon non pou louvri pwofil la; lòt yo rete la pou ou):',
       startOver: 'Rekòmanse', whySay: 'Poukisa m chwazi l: ',
       cFree: 'Chèche nan anyè WebSwan Media Network la epi pale avè m <b>gratis nèt</b> pou ou. Chak doktè oswa avoka fikse pri pa yo pou sèvis yo, kidonk mande biwo yo dirèkteman.', cAbout: 'WebSwan Media Network se yon anyè <b>doktè ak avoka</b>. Di m sa w bezwen ak ki kote w ye, epi m ap jwenn apeprè 3 a 5 bon chwa pou ou ak nimewo telefòn yo ak pwofil yo.', cWsmn: 'WSMN vle di <b>WebSwan Media Network</b>, platfòm piblisite nou an.',
@@ -1921,7 +1938,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   }
 
   let S = null;
-  function reset() { S = { step: 'start', type: '', specialty: '', state: '', city: '', zip: '', need: '', prefs: {} }; }
+  function reset() { S = { step: 'start', type: '', specialty: '', state: '', city: '', zip: '', need: '', prefs: {}, top3: [], askedTop: false }; }
   function rwToAnchor() {
     const a = R.anchor; if (!a || !a.isConnected) { R.log.scrollTop = R.log.scrollHeight; return; }
     R.log.scrollTop += a.getBoundingClientRect().top - R.log.getBoundingClientRect().top - 8;
@@ -1985,6 +2002,25 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     ]
   };
   let qIndex = 0;
+  // ---- The visitor's 3 main criteria (asked once, in order of importance) ----
+  const topQ = () => QUESTIONS[S.type].find(q => q.key === 'top');
+  const topOpts = () => { const Q = topQ(); const o = Q ? qText(Q).opts : []; return o.map(x => typeof x === 'string' ? { label: x, value: x } : x); };
+  const topLabelOf = v => { const o = topOpts().find(x => x.value === v); return o ? o.label : v; };
+  function askTopStep() {
+    S.step = 'top3';
+    const n = S.top3.length + 1;
+    say(n === 1 ? t('askTop')(whoW()) : t('askTopN')(n));
+    const left = topOpts().filter(o => !S.top3.includes(o.value));
+    rwChips(n === 1 ? left : left.concat([{ label: t('topDone'), value: '__top_done' }]));
+  }
+  function applyTop3() {
+    const P = S.prefs, T = S.top3;
+    P.top = T[0] || '';
+    if (T.includes('Telehealth visits')) P.mode = 'Telehealth';
+    if (T.includes('Evening / weekend hours')) P.hours = 'Yes, please';
+    if (T.includes('Great reviews')) P.rating = 'Yes, 4 stars or higher';
+    if (T.includes('Free consultation')) P.consult = 'Yes, free consultation';
+  }
   // input box hint changes with each step so visitors always know what to type next
   function setPH() {
     const P = t('ph');
@@ -2010,6 +2046,11 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   function qRelevant(Q) {
     switch (Q.key) {
       case 'visit': return false;                      // the "tell me more" step already covers the reason for care
+      case 'top': case 'gender': case 'mode': case 'rating': case 'consult': return false;   // covered by the 3 main criteria
+      case 'insurance': return (S.top3 || []).includes('Accepts my insurance');
+      case 'lang': return (S.top3 || []).includes('Speaks my language');
+      case 'fee': return (S.top3 || []).includes('Payment type');
+      case 'hours': return S.type === 'attorney' ? (S.top3 || []).includes('Evening / virtual meetings') : false;
       case 'stage': return /criminal|dui|dwi|traffic|drug|expunge|immigra|deport|asylum|custody|child support|divorce|evict|foreclos|bankrupt|protective|domestic/i.test(S.specialty + ' ' + S.need);
       default: return true;
     }
@@ -2026,6 +2067,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     if (!S.city && !S.zip && !S.askedCity) { S.askedCity = true; S.step = 'city'; say(t('askCity')(esc(stateL(S.state)))); rwChips([{ label: t('anywhere')(stateL(S.state)), value: 'Anywhere in ' + stateName(S.state) }]); return; }
     if (S.city && !S.zip && !S.askedZip) { S.askedZip = true; S.step = 'zip'; say(t('askZip')(esc(S.city))); rwChips([{ label: t('skip'), value: 'Skip' }]); return; }
     if (!S.askedNeed) { S.askedNeed = true; S.step = 'need'; say(t('askNeed')); rwChips([{ label: t('skip'), value: 'Skip' }]); return; }
+    if (!S.askedTop) { if (S.step !== 'top3') { askTopStep(); return; } }
     const qs = QUESTIONS[S.type];
     // look at who is actually listed first, so Rachel only asks questions that can narrow the results
     if (!S.pref) {
@@ -2082,7 +2124,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     if (S.step === 'start' && txt === 'Searcher mode') { S.step = 'type'; next(); setPH(); return; }
     if (S.step === 'zip') { const z = txt.match(/\b\d{5}\b/); if (z) { S.zip = z[0]; say(t('zipIn')(esc(S.zip), esc(stateL(S.state)))); } next(); setPH(); return; }
     // pick up anything useful the person typed, at any step
-    if (S.step !== 'q' && S.step !== 'need') {
+    if (S.step !== 'q' && S.step !== 'need' && S.step !== 'top3') {
       if (!S.type) S.type = /^attorney$/i.test(txt) ? 'attorney' : /^doctor$/i.test(txt) ? 'doctor' : detectType(txt);
       if (!S.specialty) { const sp = SPEC_TYPE[txt] ? txt : detectSpecialty(txt, S.type); if (sp && (!S.type || SPEC_TYPE[sp] === S.type)) { S.specialty = sp; S.type = SPEC_TYPE[sp]; } }
       const pl = detectPlace(txt);
@@ -2113,6 +2155,14 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       if (!/^skip$/i.test(txt)) { S.need = (S.need + ' ' + txt).trim(); if (S.specialty === '*') { const sp = detectSpecialty(txt, S.type); if (sp) S.specialty = sp; } }
     } else if (S.step === 'q') {
       const Q = QUESTIONS[S.type][qIndex]; if (!/^skip$/i.test(txt)) S.prefs[Q.key] = txt; qIndex++;
+    } else if (S.step === 'top3') {
+      const opts = topOpts(), low = txt.toLowerCase();
+      const hit = opts.find(o => o.value.toLowerCase() === low || String(o.label).toLowerCase() === low);
+      let done = txt === '__top_done' || /^(skip|that'?s all|done|no)$/i.test(txt);
+      if (hit && !S.top3.includes(hit.value)) S.top3.push(hit.value);
+      else if (!hit && !done) S.need = (S.need + ' ' + txt).trim();   // typed in their own words: keep it for matching
+      if (S.top3.length >= 3 || done || !hit) { S.askedTop = true; applyTop3(); S.step = 'top3done'; }
+      else { askTopStep(); setPH(); return; }
     }
     if (S.cityConfirm) { say(S.cityConfirm); S.cityConfirm = ''; }
     if (!hadSpec && S.specialty && S.specialty !== '*' && S.step === 'specialty') say(t('gotIt')(esc(S.specialty.replace(/ \(All\)$/, ''))));
@@ -2175,7 +2225,8 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     const th = /4\.5/.test(P.rating || '') ? 4.5 : /^yes/i.test(P.rating || '') ? 4 : P.top === 'Great reviews' ? 4 : 0, r = +p.reviewRating || 0;
     if (th) add('rating', r >= th, r ? r.toFixed(1) + '★ reviews' : th + '★+ reviews', th + '★+ reviews');
     const topKey = TOPK[P.top] || '', tc = C.filter(c => c.k === topKey || (topKey === 'hours' && c.k === 'virtual'));
-    return { C, m: C.filter(c => c.ok).length, n: C.length, dist, topKey: tc.length ? topKey : '', topMet: tc.some(c => c.ok) ? 1 : 0 };
+    const t3 = (S.top3 || []).reduce((sum, v, i) => { const k = TOPK[v]; const ok = C.some(c => c.ok && (c.k === k || (k === 'hours' && c.k === 'virtual'))); return sum + (ok ? (3 - i) : 0); }, 0);
+    return { C, m: C.filter(c => c.ok).length, n: C.length, dist, t3, topKey: tc.length ? topKey : '', topMet: tc.some(c => c.ok) ? 1 : 0 };
   }
   function matchLines(p, topLabel) {
     if (!p.n) return p.why.length ? `<br><span class="rw-why">✓ ${esc(p.why.slice(0, 3).map(whyT).join(' · '))}</span>` : '';
@@ -2206,12 +2257,13 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       rwChips([{ label: t('startOver'), value: 'Start over' }]); return;
     }
     // Rank by number of needs met, then the visitor's #1 priority, then distance, then star rating (never by SEO)
-    const ranked = rows.map(p => Object.assign(p, score(p), crit(p))).sort((a, b) => (b.m - a.m) || (b.topMet - a.topMet) || (a.dist - b.dist) || ((+b.reviewRating || 0) - (+a.reviewRating || 0)) || ((b.accepting ? 1 : 0) - (a.accepting ? 1 : 0)) || ((b.featured ? 1 : 0) - (a.featured ? 1 : 0)) || String(a.name).localeCompare(String(b.name))).slice(0, 5);
+    const ranked = rows.map(p => Object.assign(p, score(p), crit(p))).sort((a, b) => (b.t3 - a.t3) || (b.m - a.m) || (b.topMet - a.topMet) || (a.dist - b.dist) || ((+b.reviewRating || 0) - (+a.reviewRating || 0)) || ((b.accepting ? 1 : 0) - (a.accepting ? 1 : 0)) || ((b.featured ? 1 : 0) - (a.featured ? 1 : 0)) || String(a.name).localeCompare(String(b.name))).slice(0, 5);
     const total = rows.length;
     const TQ = QUESTIONS[S.type].find(q => q.key === 'top'), tqo = TQ ? qText(TQ).opts : [];
     const topO = tqo.find(o => (o && o.value ? o.value : o) === S.prefs.top), topLabel = topO ? (topO.label || topO) : (S.prefs.top || '');
     say(`${broadened ? t('broadened')(esc(spLabel)) : ''}${t('reviewed')(total, ranked.length)}`);
-    if (ranked[0].n) say(t('matchIntro')(ranked[0].n));
+    if (S.top3 && S.top3.length) { const L = S.top3.map(v => esc(topLabelOf(v))); const list = L.length > 1 ? L.slice(0, -1).join(', ') + t('andW') + L[L.length - 1] : L[0]; say(t('basedOn')(list, whoW(true), ranked.length)); }
+    else if (ranked[0].n) say(t('matchIntro')(ranked[0].n));
     ranked.forEach((p, i) => {
       const nm = esc(p.name) + (p.credentials ? ', ' + esc(p.credentials) : '');
       const spec = (p.specialties || []).slice(0, 3).map(esc).join(', ');
