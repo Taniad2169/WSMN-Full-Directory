@@ -405,7 +405,24 @@
     .pro-facts li{background:#f7fbfd;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:14px;font-weight:600;color:#18364a}
     .dir-pro .dir-actions button{display:inline-flex;align-items:center;border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:800;border:1.5px solid #1b70c2;color:#1b70c2;background:#fff;cursor:pointer}
     @media(max-width:600px){#rw-panel{left:8px;right:8px;width:auto;bottom:76px;height:calc(100vh - 96px)}#rw-launch{left:12px;bottom:12px}#rw-launch span.rw-lbl{display:none}#rw-launch{padding:8px}.pro-facts{grid-template-columns:1fr}.pro-head{flex-direction:column;align-items:flex-start}.pro-card{padding:22px 18px}}
-    </style>
+    
+    /* Rachel photo + talking mouth (same as ads.webswanmedianetwork.com) */
+    .rpic{position:relative;overflow:hidden;padding:0!important;background:#2f9fd0!important;font-size:0!important}
+    .rpic .rstage{position:absolute;width:166.667%;height:166.667%;left:-42.593%;top:-11.111%}
+    .rpic.full .rstage{width:100%;height:100%;left:0;top:0}
+    .rstage img{position:absolute;display:block;max-width:none;margin:0;border:0}
+    .rstage .rb{left:0;top:0;width:100%;height:100%}
+    .rstage .rg{left:43%;top:41.111%;width:24.556%;height:5.556%}
+    .rstage .rj{left:37.889%;top:41.444%;width:35.667%;height:26.667%;will-change:transform}
+    html.rw-talking .rstage .rj{animation:rwTalk .95s ease-in-out infinite}
+    @keyframes rwTalk{0%,100%{transform:translateY(0)}12%{transform:translateY(5.5%)}26%{transform:translateY(1.5%)}40%{transform:translateY(8%)}55%{transform:translateY(2.5%)}70%{transform:translateY(6.5%)}85%{transform:translateY(1%)}}
+    @media (prefers-reduced-motion:reduce){html.rw-talking .rstage .rj{animation-duration:1.6s}}
+    .rw-top .rw-face.rpic{width:58px;height:58px;border:2px solid #a9ecfc}
+    #rw-launch .rw-face.rpic{width:42px;height:42px;border:2px solid #fff}
+    .rw-hero{align-self:center;margin:2px 0 6px}
+    .rw-hero .rpic{display:block;width:170px;height:170px;border-radius:18px;box-shadow:0 10px 24px rgba(8,42,72,.25)}
+    @media (max-height:720px){.rw-top .rw-face.rpic{width:44px;height:44px}.rw-hero .rpic{width:120px;height:120px}}
+</style>
 
     <section class="dir-hero" id="find" aria-labelledby="dir-h1"><div class="wrap">
       <div class="dir-center"><div class="eyebrow">WebSwan Media Network Directory</div></div>
@@ -441,7 +458,7 @@
           <button class="btn" type="submit" id="dir-submit">Search <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
         </form>
         <p class="dir-hint">Enter your city, state and ZIP code so we can show the professionals closest to you first. Rachel uses them too, to find your 5 best matches.</p>
-        <div class="rw-invite"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face" aria-hidden="true">R</div><p><b>Want a more custom search?</b> Chat with <b>Rachel WebSwan</b>. Answer a few quick questions and she will narrow the directory down to your 3 to 5 best matches. <b>Want a broader list?</b> Use the search fields on this page and you will see up to 100 results to choose from.</p></div><button class="btn" type="button" data-open-rachel>Talk to Rachel <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+        <div class="rw-invite"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face rpic" aria-hidden="true"><span class="rstage"><img class="rb" src="rachel/rachel-wsmn.jpg" alt=""><img class="rg" src="rachel/rachel-gap.png" alt=""><img class="rj" src="rachel/rachel-jaw.png" alt=""></span></div><p><b>Want a more custom search?</b> Chat with <b>Rachel WebSwan</b>. Answer a few quick questions and she will narrow the directory down to your 5 best matches. <b>Want a broader list?</b> Use the search fields on this page and you will see up to 20 results to choose from.</p></div><button class="btn" type="button" data-open-rachel>Talk to Rachel <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
         <div id="dir-out" aria-live="polite"></div>
         <p class="dir-note">Listings in the WebSwan Media Network Directory are paid advertisements (sponsored listings) from independent professionals. WebSwan Media Network does not provide medical or legal advice, does not endorse or refer any professional, and does not guarantee results. Please verify licenses with your state medical board or state bar before hiring. In a medical emergency, call 911.</p>
       </div>
@@ -598,9 +615,9 @@
   </div>
 </section>
 <!-- ===== RACHEL WEBSWAN (guided directory assistant) ===== -->
-<button id="rw-launch" type="button" aria-expanded="false" aria-controls="rw-panel"><span class="rw-face" aria-hidden="true">R</span><span class="rw-lbl">Chat with Rachel WebSwan</span></button>
+<button id="rw-launch" type="button" aria-expanded="false" aria-controls="rw-panel"><span class="rw-face rpic" aria-hidden="true"><span class="rstage"><img class="rb" src="rachel/rachel-wsmn.jpg" alt=""><img class="rg" src="rachel/rachel-gap.png" alt=""><img class="rj" src="rachel/rachel-jaw.png" alt=""></span></span><span class="rw-lbl">Chat with Rachel WebSwan</span></button>
 <div id="rw-panel" role="dialog" aria-label="Chat with Rachel WebSwan" hidden>
-  <div class="rw-top"><span class="rw-face" aria-hidden="true">R</span><div><b>Rachel WebSwan</b><small>Web assistant · WebSwan Media Network</small></div><button type="button" id="rw-close" aria-label="Close chat">×</button></div>
+  <div class="rw-top"><span class="rw-face rpic" aria-hidden="true"><span class="rstage"><img class="rb" src="rachel/rachel-wsmn.jpg" alt=""><img class="rg" src="rachel/rachel-gap.png" alt=""><img class="rj" src="rachel/rachel-jaw.png" alt=""></span></span><div><b>Rachel WebSwan</b><small>Web assistant · WebSwan Media Network</small></div><button type="button" id="rw-close" aria-label="Close chat">×</button></div>
   <div id="rw-bar"><button type="button" id="rw-voice" aria-pressed="true">🔊 Voice on</button><label class="rw-lang-wrap"><span id="rw-lang-lbl">Language</span> <select id="rw-lang" aria-label="Rachel's language"></select></label></div>
   <div id="rw-soon" role="dialog" aria-modal="true" aria-labelledby="rw-soon-h" hidden><div class="rw-soon-card"><h3 id="rw-soon-h">Voice not available yet</h3><p></p><button type="button" id="rw-soon-ok">OK</button></div></div>
   <div id="rw-log" role="log" aria-live="polite"></div>
@@ -1074,7 +1091,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     }
     const room = Math.max(0, MAX_SELF - Math.min(exact.length, MAX_SELF));
     if (nearby.length && room) html += `<p class="dir-status" style="margin-top:26px">${exact.length ? 'More' : 'Closest'} in ${esc(stateName(st))}, nearest to ${esc(zipRaw)} first</p><div class="dir-results">${nearby.slice(0, room).map(card).join('')}</div>`;
-    if (exact.length + nearby.length > 1) html = `<div class="rw-invite" style="margin:0 0 6px"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face" aria-hidden="true">R</div><p><b>Too many to choose from?</b> Rachel WebSwan already has your city, state and ZIP. Answer a few quick questions and she will pick your <b>5 best matches</b>.</p></div><button class="btn" type="button" data-rachel-from-search>Let Rachel pick my 5</button></div>` + html;
+    if (exact.length + nearby.length > 1) html = `<div class="rw-invite" style="margin:0 0 6px"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face rpic" aria-hidden="true"><span class="rstage"><img class="rb" src="rachel/rachel-wsmn.jpg" alt=""><img class="rg" src="rachel/rachel-gap.png" alt=""><img class="rj" src="rachel/rachel-jaw.png" alt=""></span></div><p><b>Too many to choose from?</b> Rachel WebSwan already has your city, state and ZIP. Answer a few quick questions and she will pick your <b>5 best matches</b>.</p></div><button class="btn" type="button" data-rachel-from-search>Let Rachel pick my 5</button></div>` + html;
     out.innerHTML = html;
   }
   window.WSMNFormValues = () => ({ type: typeSel.value, specialty: specSel.value, state: stateSel.value, city: cityIn.value.trim().replace(/\b\w/g, m => m.toUpperCase()), zip: /^\d{5}$/.test(zipIn.value.trim()) ? zipIn.value.trim() : '' });
@@ -1709,8 +1726,8 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       if (!v) { if (!queue) soonModal(); return; } // never use a male voice or the wrong accent
       u.voice = v; u.lang = v.lang;
       u.rate = 1; u.pitch = 1; // natural voice, no pitch tricks
-      u.onstart = () => { if (current && current !== btn) mark(current, false); current = btn; mark(btn, true); };
-      u.onend = u.onerror = () => { mark(btn, false); if (current === btn) current = null; };
+      u.onstart = () => { if (current && current !== btn) mark(current, false); current = btn; mark(btn, true); talking(true); };
+      u.onend = u.onerror = () => { mark(btn, false); if (current === btn) current = null; setTimeout(() => { if (!synth.speaking) talking(false); }, 60); };
       synth.speak(u);
       } catch (e) { console.warn('Rachel voice error', e); if (btn) mark(btn, false); }
     }
@@ -1735,7 +1752,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       m.querySelector('h3').textContent = '🔊 ' + h; m.querySelector('p').textContent = p; m.querySelector('button').textContent = ok;
       m.hidden = false; m.querySelector('button').focus();
     }
-    function stop() { if (ok) synth.cancel(); if (current) mark(current, false); current = null; }
+    function talking(onOff) { document.documentElement.classList.toggle('rw-talking', !!onOff); }
+    if (ok) setInterval(() => { if (!synth.speaking && document.documentElement.classList.contains('rw-talking')) talking(false); }, 700);
+    function stop() { if (ok) synth.cancel(); if (current) mark(current, false); current = null; talking(false); }
     function paint() {
       const b = document.getElementById('rw-voice'); if (!b) return;
       b.setAttribute('aria-pressed', String(on)); b.classList.toggle('off', !on);
@@ -2290,7 +2309,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   }
   function start(again) {
     reset(); qIndex = 0;
-    if (!again) R.log.innerHTML = '';
+    if (!again) R.log.innerHTML = '<div class="rw-hero" aria-hidden="true"><span class="rpic full"><span class=\"rstage\"><img class=\"rb\" src=\"rachel/rachel-wsmn.jpg\" alt=\"\"><img class=\"rg\" src=\"rachel/rachel-gap.png\" alt=\"\"><img class=\"rj\" src=\"rachel/rachel-jaw.png\" alt=\"\"></span></span></div>';
     say(t('greet'));
     rwChips([{ label: '🔎 ' + P().seeker, value: 'Searcher mode' }, { label: '🩺⚖️ ' + P().chip, value: 'Provider mode' }]); setPH();
   }
@@ -2318,7 +2337,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   window.WSMNRachelPrefill = (o) => {
     o = o || {};
     openRachel();
-    reset(); qIndex = 0; S.mode = 'seek'; R.log.innerHTML = ''; R.chips.innerHTML = '';
+    reset(); qIndex = 0; S.mode = 'seek'; R.log.innerHTML = '<div class="rw-hero" aria-hidden="true"><span class="rpic full"><span class=\"rstage\"><img class=\"rb\" src=\"rachel/rachel-wsmn.jpg\" alt=\"\"><img class=\"rg\" src=\"rachel/rachel-gap.png\" alt=\"\"><img class=\"rj\" src=\"rachel/rachel-jaw.png\" alt=\"\"></span></span></div>'; R.chips.innerHTML = '';
     if (o.type === 'doctor' || o.type === 'attorney') S.type = o.type;
     if (o.specialty) S.specialty = o.specialty;
     if (o.state) S.state = o.state;
