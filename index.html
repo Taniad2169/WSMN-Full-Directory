@@ -678,6 +678,7 @@
           <input type="file" id="adm-gal-file" accept="image/*" multiple style="height:auto;padding:10px">
           <small style="color:var(--muted)">Choose up to 3 photos (office, team, the doctor or attorney). They are resized automatically before saving.</small></div>
         <div class="adm-field"><label for="adm-exp">Listing paid through</label><input id="adm-exp" type="date"></div>
+        <div class="adm-field"><label for="adm-plan">Membership</label><select id="adm-plan"><option value="found">Found: listing only ($49/mo)</option><option value="leads">Found + contact requests ($69/mo)</option><option value="premium">Premium: AI receptionist calls &amp; books ($149/mo)</option></select></div>
         <div class="adm-field full adm-checks">
           <label><input type="checkbox" id="adm-active" checked> Live on the directory (uncheck to pause)</label>
           <label><input type="checkbox" id="adm-featured"> Featured (shows first)</label>
@@ -1308,11 +1309,16 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-appt]'); if (b) { e.preventDefault(); openAppt(b.dataset.appt, b.dataset.apptName || ''); } });
   document.addEventListener('keydown', e => { const m = $('appt-modal'); if (e.key === 'Escape' && m && !m.hidden) apptClose(); });
+  // Only $69 (leads) and $149 (premium) members receive contact requests; $49 members are listed only.
+  const takesRequests = p => p && (p.plan === 'leads' || p.plan === 'premium');
   function apptAsk(ranked, att) {
     const T = at();
+    ranked = ranked.filter(takesRequests);
+    if (!ranked.length) return;
     say(`${esc(T.ask(att))}<div class="rw-pick">${esc(T.pickOne)}${ranked.map(p => `<br><button type="button" class="rw-link" data-appt="${esc(p.id)}" data-appt-name="${esc(p.name)}">📅 ${esc(p.name)}</button>`).join('')}</div>`);
   }
   function addApptButton(p, id) {
+    if (!takesRequests(p)) return;
     const T = at(), h = proBody.querySelector('#pro-title');
     const b = `<button type="button" class="pro-appt" data-appt="${esc(id)}" data-appt-name="${esc(p.name || '')}">${esc(T.btn)}</button>`;
     if (h) h.insertAdjacentHTML('afterend', b); else proBody.insertAdjacentHTML('afterbegin', b);
@@ -2623,6 +2629,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     chips = (p.specialties || []).slice(); drawChips();
     F.forEach(k => { const [el, key] = k.includes(':') ? k.split(':') : [k, k]; $('adm-' + el).value = p[key] || ''; });
     $('adm-state').value = p.state || '';
+    $('adm-plan').value = ['found', 'leads', 'premium'].includes(p.plan) ? p.plan : 'found';
     $('adm-active').checked = !!p.active; $('adm-featured').checked = !!p.featured; $('adm-accepting').checked = p.accepting !== false;
     $('adm-tele').checked = !!p.telehealth; $('adm-free').checked = !!p.freeConsult; $('adm-eve').checked = !!p.eveningWeekend;
     document.querySelectorAll('.adm-fee').forEach(c => { c.checked = (p.feeTypes || []).includes(c.value); });
@@ -2643,6 +2650,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     const data = {};
     F.forEach(k => { const [el, key] = k.includes(':') ? k.split(':') : [k, k]; data[key] = $('adm-' + el).value.trim(); });
     data.type = $('adm-type').value; data.state = $('adm-state').value; data.specialties = chips.slice();
+    data.plan = $('adm-plan').value;
     data.active = $('adm-active').checked; data.featured = $('adm-featured').checked; data.accepting = $('adm-accepting').checked;
     data.telehealth = $('adm-tele').checked; data.freeConsult = $('adm-free').checked; data.eveningWeekend = $('adm-eve').checked;
     data.feeTypes = [...document.querySelectorAll('.adm-fee:checked')].map(c => c.value);
