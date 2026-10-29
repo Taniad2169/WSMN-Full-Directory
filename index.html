@@ -1216,6 +1216,107 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   }
   const proModal = $('pro-modal'), proBody = $('pro-body');
   let proReturnFocus = null;
+  /* ---------- Private appointment request (Rachel + profiles) ----------
+     Sends only contact details (no health or legal details) to a Google Apps Script in WebSwan's own
+     Google account, which emails the office and keeps a copy in a private Google Sheet. No trackers. */
+  const APPT_URL = 'https://script.google.com/macros/s/AKfycbyjXbRMVREDbzkwYZw8VDLZ3T3voncdq_CseDxAdPNYyBBa0hWEBPX9E7b6KwP2wvxAHg/exec';
+  const APPT_T = {
+    en: { ask: att => `Would you like one of them to contact you to answer your questions and set up ${att ? 'a consultation' : 'an appointment'}?`, pickOne: 'Choose who should contact you:', noThanks: 'No thanks',
+      title: n => `Request an appointment with ${n}`, intro: n => `${n}’s office will contact you. Please don’t include any medical or legal details here.`,
+      name: 'Your name', how: 'How should they contact you?', call: 'Phone call', email: 'Email', phone: 'Phone number', mail: 'Email address',
+      when: 'Best time to reach you', times: ['Morning', 'Afternoon', 'Evening'], consent: n => `I agree to share my name and contact details with ${n}’s office so they can contact me.`,
+      send: 'Send my request', sending: 'Sending…', cancel: 'Cancel', done: (n, how, when) => `Done! ${n}’s office will contact you by ${how} in the ${when.toLowerCase()}.`,
+      err: 'Sorry, the request didn’t go through. Please call the office directly.', need: 'Please fill in your name, how to reach you, the best time, and check the box.', btn: '📅 Request an appointment', off: 'Online requests are coming soon. Please call the office directly.' },
+    es: { ask: att => `¿Le gustaría que uno de ellos le contacte para responder sus preguntas y programar ${att ? 'una consulta' : 'una cita'}?`, pickOne: 'Elija quién debe contactarle:', noThanks: 'No, gracias',
+      title: n => `Solicitar cita con ${n}`, intro: n => `La oficina de ${n} le contactará. Por favor no incluya detalles médicos ni legales aquí.`,
+      name: 'Su nombre', how: '¿Cómo prefiere que le contacten?', call: 'Llamada', email: 'Correo electrónico', phone: 'Número de teléfono', mail: 'Correo electrónico',
+      when: 'Mejor horario para contactarle', times: ['Mañana', 'Tarde', 'Noche'], consent: n => `Acepto compartir mi nombre y datos de contacto con la oficina de ${n} para que me contacten.`,
+      send: 'Enviar solicitud', sending: 'Enviando…', cancel: 'Cancelar', done: (n, how, when) => `¡Listo! La oficina de ${n} le contactará por ${how} en la ${when.toLowerCase()}.`,
+      err: 'Lo sentimos, no se pudo enviar. Por favor llame directamente a la oficina.', need: 'Por favor complete su nombre, cómo contactarle, el horario y marque la casilla.', btn: '📅 Solicitar una cita', off: 'Pronto podrá solicitar citas en línea. Por favor llame a la oficina.' },
+    fr: { ask: att => `Souhaitez-vous que l’un d’eux vous contacte pour répondre à vos questions et fixer ${att ? 'une consultation' : 'un rendez-vous'} ?`, pickOne: 'Choisissez qui doit vous contacter :', noThanks: 'Non merci',
+      title: n => `Demander un rendez-vous avec ${n}`, intro: n => `Le cabinet de ${n} vous contactera. N’indiquez aucun détail médical ou juridique ici.`,
+      name: 'Votre nom', how: 'Comment souhaitez-vous être contacté ?', call: 'Appel téléphonique', email: 'E-mail', phone: 'Numéro de téléphone', mail: 'Adresse e-mail',
+      when: 'Meilleur moment pour vous joindre', times: ['Matin', 'Après-midi', 'Soir'], consent: n => `J’accepte de partager mon nom et mes coordonnées avec le cabinet de ${n} pour qu’il me contacte.`,
+      send: 'Envoyer ma demande', sending: 'Envoi…', cancel: 'Annuler', done: (n, how, when) => `C’est fait ! Le cabinet de ${n} vous contactera par ${how} (${when.toLowerCase()}).`,
+      err: 'Désolé, la demande n’a pas pu être envoyée. Appelez directement le cabinet.', need: 'Indiquez votre nom, comment vous joindre, le moment et cochez la case.', btn: '📅 Demander un rendez-vous', off: 'Les demandes en ligne arrivent bientôt. Appelez directement le cabinet.' },
+    pt: { ask: att => `Gostaria que um deles entrasse em contato para responder suas dúvidas e marcar ${att ? 'uma consulta' : 'uma consulta'}?`, pickOne: 'Escolha quem deve entrar em contato:', noThanks: 'Não, obrigado',
+      title: n => `Pedir consulta com ${n}`, intro: n => `O escritório de ${n} vai entrar em contato. Não inclua detalhes médicos ou jurídicos aqui.`,
+      name: 'Seu nome', how: 'Como prefere ser contatado?', call: 'Ligação', email: 'E-mail', phone: 'Telefone', mail: 'E-mail',
+      when: 'Melhor horário', times: ['Manhã', 'Tarde', 'Noite'], consent: n => `Concordo em compartilhar meu nome e contato com o escritório de ${n} para que entrem em contato.`,
+      send: 'Enviar pedido', sending: 'Enviando…', cancel: 'Cancelar', done: (n, how, when) => `Pronto! O escritório de ${n} vai entrar em contato por ${how} (${when.toLowerCase()}).`,
+      err: 'Desculpe, não foi possível enviar. Ligue direto para o escritório.', need: 'Preencha seu nome, como contatar você, o horário e marque a caixa.', btn: '📅 Pedir uma consulta', off: 'Em breve pedidos online. Ligue direto para o escritório.' },
+    ht: { ask: att => `Èske w ta renmen youn nan yo kontakte w pou reponn kesyon w epi fikse ${att ? 'yon konsiltasyon' : 'yon randevou'}?`, pickOne: 'Chwazi kiyès ki pou kontakte w:', noThanks: 'Non mèsi',
+      title: n => `Mande yon randevou ak ${n}`, intro: n => `Biwo ${n} ap kontakte w. Tanpri pa mete okenn detay medikal oswa legal la a.`,
+      name: 'Non w', how: 'Kijan yo ta dwe kontakte w?', call: 'Apèl telefòn', email: 'Imèl', phone: 'Nimewo telefòn', mail: 'Adrès imèl',
+      when: 'Pi bon lè pou jwenn ou', times: ['Maten', 'Apremidi', 'Aswè'], consent: n => `Mwen dakò pataje non m ak enfòmasyon kontak mwen ak biwo ${n} pou yo ka kontakte m.`,
+      send: 'Voye demann lan', sending: 'N ap voye…', cancel: 'Anile', done: (n, how, when) => `Fini! Biwo ${n} ap kontakte w pa ${how} (${when.toLowerCase()}).`,
+      err: 'Padon, demann lan pa pase. Tanpri rele biwo a dirèkteman.', need: 'Tanpri mete non w, kijan pou kontakte w, lè a, epi tcheke bwat la.', btn: '📅 Mande yon randevou', off: 'Byento w ap ka mande randevou sou entènèt. Tanpri rele biwo a.' }
+  };
+  const TIME_KEYS = ['Morning', 'Afternoon', 'Evening'];
+  const at = () => APPT_T[(typeof LANG !== 'undefined' && APPT_T[LANG]) ? LANG : 'en'];
+  (function apptStyles() {
+    const st = document.createElement('style');
+    st.textContent = '#appt-modal{position:fixed;inset:0;z-index:100000;background:rgba(6,39,67,.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}#appt-modal[hidden]{display:none}#appt-modal .ap-card{background:#fff;color:#0b2540;border-radius:18px;max-width:460px;width:100%;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative}#appt-modal h2{font-size:19px;margin:0 30px 6px 0}#appt-modal p{font-size:13.5px;margin:0 0 10px}#appt-modal label{display:block;font-weight:700;font-size:13.5px;margin:12px 0 4px}#appt-modal input[type=text],#appt-modal input[type=tel],#appt-modal input[type=email]{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #9cb6cf;border-radius:10px;font:inherit}#appt-modal .ap-row{display:flex;gap:8px;flex-wrap:wrap}#appt-modal .ap-row label{font-weight:600;margin:0;display:flex;align-items:center;gap:6px;border:1px solid #c5d6e6;border-radius:999px;padding:7px 12px;cursor:pointer}#appt-modal .ap-row input{width:auto;margin:0}#appt-modal .ap-consent{display:flex;gap:8px;align-items:flex-start;font-weight:500}#appt-modal .ap-consent input{width:auto;margin-top:3px}#appt-modal .ap-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}#appt-modal .ap-actions button{border:none;border-radius:999px;padding:10px 18px;font:inherit;font-weight:800;cursor:pointer}#appt-modal .ap-send{background:#1b70c2;color:#fff}#appt-modal .ap-cancel{background:#e6eef6;color:#0b2540}#appt-modal .ap-x{position:absolute;top:10px;right:12px;border:none;background:none;font-size:26px;cursor:pointer;color:#0b2540}#appt-modal .ap-msg{margin-top:10px;font-weight:700}#appt-modal .ap-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}.pro-appt{display:inline-block;margin:8px 0 4px;border:none;background:#1b70c2;color:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-weight:800;cursor:pointer}';
+    document.head.appendChild(st);
+  })();
+  let apptReturn = null, apptPro = null;
+  function apptClose() { const m = $('appt-modal'); if (m) m.hidden = true; if (apptReturn && apptReturn.focus) apptReturn.focus(); }
+  function openAppt(id, name) {
+    const T = at(); apptReturn = document.activeElement; apptPro = { id, name };
+    let m = $('appt-modal');
+    if (!m) { m = document.createElement('div'); m.id = 'appt-modal'; m.hidden = true; document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) apptClose(); }); }
+    const nm = esc(name || '');
+    m.innerHTML = `<div class="ap-card" role="dialog" aria-modal="true" aria-labelledby="ap-title"><button type="button" class="ap-x" aria-label="${esc(T.cancel)}">×</button>
+      <h2 id="ap-title">${esc(T.title(name || ''))}</h2><p>${esc(T.intro(name || ''))}</p>
+      ${APPT_URL.indexOf('script.google.com') < 0 ? `<p class="ap-msg">${esc(T.off)}</p>` : `<form id="ap-form" novalidate>
+        <label for="ap-name">${esc(T.name)}</label><input type="text" id="ap-name" autocomplete="name" maxlength="80" required>
+        <label>${esc(T.how)}</label><div class="ap-row" role="radiogroup"><label><input type="radio" name="ap-how" value="phone" checked> ${esc(T.call)}</label><label><input type="radio" name="ap-how" value="email"> ${esc(T.email)}</label></div>
+        <div id="ap-phone-w"><label for="ap-phone">${esc(T.phone)}</label><input type="tel" id="ap-phone" autocomplete="tel" maxlength="20"></div>
+        <div id="ap-email-w" hidden><label for="ap-email">${esc(T.mail)}</label><input type="email" id="ap-email" autocomplete="email" maxlength="120"></div>
+        <label>${esc(T.when)}</label><div class="ap-row" role="radiogroup">${TIME_KEYS.map((k, i) => `<label><input type="radio" name="ap-when" value="${k}"> ${esc(T.times[i])}</label>`).join('')}</div>
+        <div class="ap-hp" aria-hidden="true"><label for="ap-web">Website</label><input type="text" id="ap-web" tabindex="-1" autocomplete="off"></div>
+        <label class="ap-consent"><input type="checkbox" id="ap-ok"> ${esc(T.consent(name || ''))}</label>
+        <div class="ap-actions"><button type="submit" class="ap-send">${esc(T.send)}</button><button type="button" class="ap-cancel">${esc(T.cancel)}</button></div>
+        <div class="ap-msg" id="ap-msg" role="status" aria-live="polite"></div></form>`}</div>`;
+    m.hidden = false;
+    m.querySelector('.ap-x').onclick = apptClose;
+    const c = m.querySelector('.ap-cancel'); if (c) c.onclick = apptClose;
+    const f = $('ap-form');
+    if (f) {
+      f.querySelectorAll('input[name=ap-how]').forEach(r => r.onchange = () => { const em = f.querySelector('input[name=ap-how]:checked').value === 'email'; $('ap-email-w').hidden = !em; $('ap-phone-w').hidden = em; });
+      f.onsubmit = apptSend;
+      $('ap-name').focus();
+    } else m.querySelector('.ap-x').focus();
+  }
+  async function apptSend(e) {
+    e.preventDefault();
+    const T = at(), f = $('ap-form'), msg = $('ap-msg');
+    const how = f.querySelector('input[name=ap-how]:checked').value, when = (f.querySelector('input[name=ap-when]:checked') || {}).value || '';
+    const body = { providerId: apptPro.id, name: $('ap-name').value.trim(), method: how, phone: how === 'phone' ? $('ap-phone').value.trim() : '', email: how === 'email' ? $('ap-email').value.trim() : '', bestTime: when, consent: $('ap-ok').checked, lang: (typeof LANG !== 'undefined' ? LANG : 'en'), hp: $('ap-web').value };
+    const okContact = how === 'phone' ? body.phone.replace(/\D/g, '').length >= 10 : /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email);
+    if (!body.name || !okContact || !when || !body.consent) { msg.textContent = T.need; return; }
+    const btn = f.querySelector('.ap-send'); btn.disabled = true; btn.textContent = T.sending; msg.textContent = '';
+    try {
+      const r = await fetch(APPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+      const d = await r.json().catch(() => ({}));
+      if (!d.ok) throw new Error(d.error || 'failed');
+      const whenLabel = T.times[TIME_KEYS.indexOf(when)] || when;
+      f.innerHTML = `<p class="ap-msg">✓ ${esc(T.done(apptPro.name || '', how === 'email' ? T.email.toLowerCase() : T.call.toLowerCase(), whenLabel))}</p><div class="ap-actions"><button type="button" class="ap-cancel">OK</button></div>`;
+      f.querySelector('.ap-cancel').onclick = apptClose;
+      try { if (typeof say === 'function' && R && R.box && !R.box.hidden) say(esc(T.done(apptPro.name || '', how === 'email' ? T.email.toLowerCase() : T.call.toLowerCase(), whenLabel))); } catch (x) {}
+    } catch (err) { btn.disabled = false; btn.textContent = T.send; msg.textContent = T.err; }
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-appt]'); if (b) { e.preventDefault(); openAppt(b.dataset.appt, b.dataset.apptName || ''); } });
+  document.addEventListener('keydown', e => { const m = $('appt-modal'); if (e.key === 'Escape' && m && !m.hidden) apptClose(); });
+  function apptAsk(ranked, att) {
+    const T = at();
+    say(`${esc(T.ask(att))}<div class="rw-pick">${esc(T.pickOne)}${ranked.map(p => `<br><button type="button" class="rw-link" data-appt="${esc(p.id)}" data-appt-name="${esc(p.name)}">📅 ${esc(p.name)}</button>`).join('')}</div>`);
+  }
+  function addApptButton(p, id) {
+    const T = at(), h = proBody.querySelector('#pro-title');
+    const b = `<button type="button" class="pro-appt" data-appt="${esc(id)}" data-appt-name="${esc(p.name || '')}">${esc(T.btn)}</button>`;
+    if (h) h.insertAdjacentHTML('afterend', b); else proBody.insertAdjacentHTML('afterbegin', b);
+  }
   async function openProfile(id) {
     proReturnFocus = document.activeElement;
     proBody.innerHTML = '<p class="dir-status">Loading profile…</p>';
@@ -1227,7 +1328,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       const p = d.exists ? d.data() : null;
       const today = new Date().toISOString().slice(0, 10);
       if (!p || !p.active || (p.expires && p.expires < today) || !showable(p)) throw new Error('gone');
-      p._id = id; proBody.innerHTML = profileHTML(p); loadProReviews(id, p.name);
+      p._id = id; proBody.innerHTML = profileHTML(p); addApptButton(p, id); loadProReviews(id, p.name);
       const cp = proBody.querySelector('.pro-copy');
       if (cp) cp.addEventListener('click', () => {
         const link = cp.dataset.link, done = () => { cp.textContent = '✓ Link copied'; setTimeout(() => { cp.textContent = '🔗 Copy WSMN profile link'; }, 2000); };
@@ -2305,6 +2406,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     });
     say(`<div class="rw-pick"><b>${t('yourMatches')}</b>${ranked.map((p, i) => `<br><button type="button" class="rw-link" data-pro="${esc(p.id)}">${i + 1}. ${esc(p.name)}${p.n ? ' · ' + t('matchOf')(p.m, p.n) : ''}</button>`).join('')}</div>`);
     say(t('closing')(S.type === 'attorney'));
+    apptAsk(ranked, S.type === 'attorney');
     rwChips([{ label: t('startOver'), value: 'Start over' }]);
   }
   function start(again) {
