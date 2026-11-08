@@ -250,6 +250,62 @@
             "@type": "Answer",
             "text": "No. Information submitted through our contact form is used solely to help you advertise online through WebSwan Media Network. We do not sell or share it with third parties."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I find a doctor who takes my insurance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ask Rachel WebSwan. She asks whether you are paying cash or which insurance plan you have, then shows doctors who list your plan or welcome self-pay patients. Always confirm coverage with the office."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I find a doctor if I am paying cash (self-pay)?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Tell Rachel you are paying cash and she will match you with doctors who welcome self-pay patients."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I request an appointment?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open a doctor's or attorney's profile and press Request an appointment, or ask Rachel. Your name and contact details are sent privately to the office, which contacts you to set the appointment. Never include medical or legal details."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I find a female or male doctor?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Rachel can match you by the doctor's gender if you tell her it matters to you."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I find a doctor with evening or weekend hours?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tell Rachel you need evening or weekend appointments, and she will prefer professionals who list those hours."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I see a doctor by video (telehealth)?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Profiles that offer telehealth show a video visits badge, and Rachel can show only professionals who offer it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I find a top-rated doctor?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Look for the Highly recommended badge, which professionals earn with a strong rating backed by enough reviews, or tell Rachel that great reviews matter most."
+          }
         }
       ]
     },
@@ -487,6 +543,13 @@
         <details><summary><h3>Are the professionals in this directory verified?</h3></summary><p>Each listing is added by our team, not by an automatic sign-up. We still recommend confirming a doctor’s license with your state medical board, or an attorney’s standing with your state bar, before you hire them.</p></details>
         <details><summary><h3>What if there are no results in my city?</h3></summary><p>Try clearing the city or ZIP field to see everyone in your state, or choose a broader specialty. New doctors and attorneys join the directory regularly, so check back soon.</p></details>
         <details><summary><h3>I am a doctor or attorney. How do I get listed?</h3></summary><p>Listings are part of WebSwan Media Network’s advertising plans. Scroll down to “Advertise with us”, fill out the short form or call (347) 646-7086, and our team will set up your listing.</p></details>
+        <details><summary><h3>How can I find a doctor who takes my insurance?</h3></summary><p>Ask Rachel WebSwan. She asks whether you are paying cash or which insurance plan you have, then shows doctors who list your plan or welcome self-pay patients. Always confirm coverage with the office.</p></details>
+        <details><summary><h3>Can I find a doctor if I am paying cash (self-pay)?</h3></summary><p>Yes. Tell Rachel you are paying cash and she will match you with doctors who welcome self-pay patients.</p></details>
+        <details><summary><h3>How do I request an appointment?</h3></summary><p>Open a doctor's or attorney's profile and press Request an appointment, or ask Rachel. Your name and contact details are sent privately to the office, which contacts you to set the appointment. Never include medical or legal details.</p></details>
+        <details><summary><h3>How can I find a female or male doctor?</h3></summary><p>Rachel can match you by the doctor's gender if you tell her it matters to you.</p></details>
+        <details><summary><h3>How can I find a doctor with evening or weekend hours?</h3></summary><p>Tell Rachel you need evening or weekend appointments, and she will prefer professionals who list those hours.</p></details>
+        <details><summary><h3>Can I see a doctor by video (telehealth)?</h3></summary><p>Yes. Profiles that offer telehealth show a video visits badge, and Rachel can show only professionals who offer it.</p></details>
+        <details><summary><h3>How can I find a top-rated doctor?</h3></summary><p>Look for the Highly recommended badge, which professionals earn with a strong rating backed by enough reviews, or tell Rachel that great reviews matter most.</p></details>
       </div>
       <div class="dir-pros">
         <div><h2>Are you a doctor or attorney?</h2><p>Put your practice in front of people searching for your services in your city and state.</p></div>
@@ -1254,25 +1317,25 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       when: 'Best time to reach you', times: ['Morning', 'Afternoon', 'Evening'], consent: n => `I agree to share my name and contact details with ${n}’s office so they can contact me.`,
       send: 'Send my request', sending: 'Sending…', cancel: 'Cancel', done: (n, how, when) => `Done! ${n}’s office will contact you by ${how} in the ${when.toLowerCase()}.`,
       err: 'Sorry, the request didn’t go through. Please call the office directly.', need: 'Please fill in your name, how to reach you, the best time, and check the box.', btn: '📅 Request an appointment', off: 'Online requests are coming soon. Please call the office directly.' },
-    es: { ask: att => `¿Le gustaría que uno de ellos le contacte para responder sus preguntas y programar ${att ? 'una consulta' : 'una cita'}?`, pickOne: 'Elija quién debe contactarle:', noThanks: 'No, gracias',
+    es: { pay: "¿Paga en efectivo o qué seguro tiene?", payPh: "Efectivo, Aetna, Medicare…", ask: att => `¿Le gustaría que uno de ellos le contacte para responder sus preguntas y programar ${att ? 'una consulta' : 'una cita'}?`, pickOne: 'Elija quién debe contactarle:', noThanks: 'No, gracias',
       title: n => `Solicitar cita con ${n}`, intro: n => `La oficina de ${n} le contactará. Por favor no incluya detalles médicos ni legales aquí.`,
       name: 'Su nombre', how: '¿Cómo prefiere que le contacten?', call: 'Llamada', email: 'Correo electrónico', phone: 'Número de teléfono', mail: 'Correo electrónico',
       when: 'Mejor horario para contactarle', times: ['Mañana', 'Tarde', 'Noche'], consent: n => `Acepto compartir mi nombre y datos de contacto con la oficina de ${n} para que me contacten.`,
       send: 'Enviar solicitud', sending: 'Enviando…', cancel: 'Cancelar', done: (n, how, when) => `¡Listo! La oficina de ${n} le contactará por ${how} en la ${when.toLowerCase()}.`,
       err: 'Lo sentimos, no se pudo enviar. Por favor llame directamente a la oficina.', need: 'Por favor complete su nombre, cómo contactarle, el horario y marque la casilla.', btn: '📅 Solicitar una cita', off: 'Pronto podrá solicitar citas en línea. Por favor llame a la oficina.' },
-    fr: { ask: att => `Souhaitez-vous que l’un d’eux vous contacte pour répondre à vos questions et fixer ${att ? 'une consultation' : 'un rendez-vous'} ?`, pickOne: 'Choisissez qui doit vous contacter :', noThanks: 'Non merci',
+    fr: { pay: "Paiement comptant ou quelle assurance ?", payPh: "Comptant, Aetna, Medicare…", ask: att => `Souhaitez-vous que l’un d’eux vous contacte pour répondre à vos questions et fixer ${att ? 'une consultation' : 'un rendez-vous'} ?`, pickOne: 'Choisissez qui doit vous contacter :', noThanks: 'Non merci',
       title: n => `Demander un rendez-vous avec ${n}`, intro: n => `Le cabinet de ${n} vous contactera. N’indiquez aucun détail médical ou juridique ici.`,
       name: 'Votre nom', how: 'Comment souhaitez-vous être contacté ?', call: 'Appel téléphonique', email: 'E-mail', phone: 'Numéro de téléphone', mail: 'Adresse e-mail',
       when: 'Meilleur moment pour vous joindre', times: ['Matin', 'Après-midi', 'Soir'], consent: n => `J’accepte de partager mon nom et mes coordonnées avec le cabinet de ${n} pour qu’il me contacte.`,
       send: 'Envoyer ma demande', sending: 'Envoi…', cancel: 'Annuler', done: (n, how, when) => `C’est fait ! Le cabinet de ${n} vous contactera par ${how} (${when.toLowerCase()}).`,
       err: 'Désolé, la demande n’a pas pu être envoyée. Appelez directement le cabinet.', need: 'Indiquez votre nom, comment vous joindre, le moment et cochez la case.', btn: '📅 Demander un rendez-vous', off: 'Les demandes en ligne arrivent bientôt. Appelez directement le cabinet.' },
-    pt: { ask: att => `Gostaria que um deles entrasse em contato para responder suas dúvidas e marcar ${att ? 'uma consulta' : 'uma consulta'}?`, pickOne: 'Escolha quem deve entrar em contato:', noThanks: 'Não, obrigado',
+    pt: { pay: "Vai pagar particular ou qual plano?", payPh: "Particular, Aetna, Medicare…", ask: att => `Gostaria que um deles entrasse em contato para responder suas dúvidas e marcar ${att ? 'uma consulta' : 'uma consulta'}?`, pickOne: 'Escolha quem deve entrar em contato:', noThanks: 'Não, obrigado',
       title: n => `Pedir consulta com ${n}`, intro: n => `O escritório de ${n} vai entrar em contato. Não inclua detalhes médicos ou jurídicos aqui.`,
       name: 'Seu nome', how: 'Como prefere ser contatado?', call: 'Ligação', email: 'E-mail', phone: 'Telefone', mail: 'E-mail',
       when: 'Melhor horário', times: ['Manhã', 'Tarde', 'Noite'], consent: n => `Concordo em compartilhar meu nome e contato com o escritório de ${n} para que entrem em contato.`,
       send: 'Enviar pedido', sending: 'Enviando…', cancel: 'Cancelar', done: (n, how, when) => `Pronto! O escritório de ${n} vai entrar em contato por ${how} (${when.toLowerCase()}).`,
       err: 'Desculpe, não foi possível enviar. Ligue direto para o escritório.', need: 'Preencha seu nome, como contatar você, o horário e marque a caixa.', btn: '📅 Pedir uma consulta', off: 'Em breve pedidos online. Ligue direto para o escritório.' },
-    ht: { ask: att => `Èske w ta renmen youn nan yo kontakte w pou reponn kesyon w epi fikse ${att ? 'yon konsiltasyon' : 'yon randevou'}?`, pickOne: 'Chwazi kiyès ki pou kontakte w:', noThanks: 'Non mèsi',
+    ht: { pay: "W ap peye kach oswa ki asirans?", payPh: "Kach, Aetna, Medicare…", ask: att => `Èske w ta renmen youn nan yo kontakte w pou reponn kesyon w epi fikse ${att ? 'yon konsiltasyon' : 'yon randevou'}?`, pickOne: 'Chwazi kiyès ki pou kontakte w:', noThanks: 'Non mèsi',
       title: n => `Mande yon randevou ak ${n}`, intro: n => `Biwo ${n} ap kontakte w. Tanpri pa mete okenn detay medikal oswa legal la a.`,
       name: 'Non w', how: 'Kijan yo ta dwe kontakte w?', call: 'Apèl telefòn', email: 'Imèl', phone: 'Nimewo telefòn', mail: 'Adrès imèl',
       when: 'Pi bon lè pou jwenn ou', times: ['Maten', 'Apremidi', 'Aswè'], consent: n => `Mwen dakò pataje non m ak enfòmasyon kontak mwen ak biwo ${n} pou yo ka kontakte m.`,
@@ -1289,7 +1352,9 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   let apptReturn = null, apptPro = null;
   function apptClose() { const m = $('appt-modal'); if (m) m.hidden = true; if (apptReturn && apptReturn.focus) apptReturn.focus(); }
   function openAppt(id, name) {
-    const T = at(); apptReturn = document.activeElement; apptPro = { id, name };
+    const T = at(); apptReturn = document.activeElement;
+    let pay = '', att = false; try { att = typeof S !== 'undefined' && S && S.type === 'attorney'; const v = S && S.prefs && S.prefs.insurance; if (v && !isSkipIns(v)) pay = isCash(v) ? 'Cash / self-pay' : v; } catch (x) {}
+    apptPro = { id, name, pay, att };
     let m = $('appt-modal');
     if (!m) { m = document.createElement('div'); m.id = 'appt-modal'; m.hidden = true; document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) apptClose(); }); }
     const nm = esc(name || '');
@@ -1300,6 +1365,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
         <label>${esc(T.how)}</label><div class="ap-row" role="radiogroup"><label><input type="radio" name="ap-how" value="phone" checked> ${esc(T.call)}</label><label><input type="radio" name="ap-how" value="email"> ${esc(T.email)}</label></div>
         <div id="ap-phone-w"><label for="ap-phone">${esc(T.phone)}</label><input type="tel" id="ap-phone" autocomplete="tel" maxlength="20"></div>
         <div id="ap-email-w" hidden><label for="ap-email">${esc(T.mail)}</label><input type="email" id="ap-email" autocomplete="email" maxlength="120"></div>
+        ${apptPro.att ? '' : `<label for="ap-pay">${esc(T.pay || 'Paying cash, or which insurance?')}</label><input type="text" id="ap-pay" maxlength="60" list="ap-pay-list" placeholder="${esc(T.payPh || 'Cash / self-pay, Aetna, Medicare…')}" value="${esc(apptPro.pay || '')}"><datalist id="ap-pay-list"><option>Cash / self-pay</option><option>Medicare</option><option>Medicaid</option><option>Aetna</option><option>Cigna</option><option>UnitedHealthcare</option><option>Blue Cross Blue Shield</option><option>Delta Dental</option></datalist>`}
         <label>${esc(T.when)}</label><div class="ap-row" role="radiogroup">${TIME_KEYS.map((k, i) => `<label><input type="radio" name="ap-when" value="${k}"> ${esc(T.times[i])}</label>`).join('')}</div>
         <div class="ap-hp" aria-hidden="true"><label for="ap-web">Website</label><input type="text" id="ap-web" tabindex="-1" autocomplete="off"></div>
         <label class="ap-consent"><input type="checkbox" id="ap-ok"> ${esc(T.consent(name || ''))}</label>
@@ -1319,7 +1385,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     e.preventDefault();
     const T = at(), f = $('ap-form'), msg = $('ap-msg');
     const how = f.querySelector('input[name=ap-how]:checked').value, when = (f.querySelector('input[name=ap-when]:checked') || {}).value || '';
-    const body = { providerId: apptPro.id, name: $('ap-name').value.trim(), method: how, phone: how === 'phone' ? $('ap-phone').value.trim() : '', email: how === 'email' ? $('ap-email').value.trim() : '', bestTime: when, consent: $('ap-ok').checked, lang: (typeof LANG !== 'undefined' ? LANG : 'en'), hp: $('ap-web').value };
+    const body = { providerId: apptPro.id, name: $('ap-name').value.trim(), method: how, phone: how === 'phone' ? $('ap-phone').value.trim() : '', email: how === 'email' ? $('ap-email').value.trim() : '', bestTime: when, payment: ($('ap-pay') ? $('ap-pay').value.trim().slice(0, 60) : ''), consent: $('ap-ok').checked, lang: (typeof LANG !== 'undefined' ? LANG : 'en'), hp: $('ap-web').value };
     const okContact = how === 'phone' ? body.phone.replace(/\D/g, '').length >= 10 : /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email);
     if (!body.name || !okContact || !when || !body.consent) { msg.textContent = T.need; return; }
     const btn = f.querySelector('.ap-send'); btn.disabled = true; btn.textContent = T.sending; msg.textContent = '';
