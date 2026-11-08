@@ -686,6 +686,7 @@
           <label><input type="checkbox" id="adm-tele"> Telehealth / virtual meetings</label>
           <label><input type="checkbox" id="adm-free"> Free consultation</label>
           <label><input type="checkbox" id="adm-eve"> Evening / weekend hours</label>
+          <label><input type="checkbox" id="adm-cash"> Welcomes self-pay / cash patients (doctors)</label>
         </div>
         <div class="adm-field full adm-checks"><span style="font-weight:800;font-size:12.5px;color:var(--navy)">Attorney fee types:</span>
           <label><input type="checkbox" class="adm-fee" value="Contingency"> Contingency</label>
@@ -1010,6 +1011,24 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   const portalLbl = p => p.type === 'attorney' ? 'Client portal' : 'Patient portal';
   const portalOk = p => /^https:\/\//i.test(p.portalUrl || '');
   const wsmnLink = id => { try { const u = new URL(location.origin + location.pathname); u.searchParams.set('pro', id); return u.toString(); } catch (e) { return '?pro=' + encodeURIComponent(id); } };
+  // "Highly recommended" like the big booking sites: strong rating backed by enough reviews
+  function highlyRec(p) { return (+p.reviewRating || 0) >= 4.8 && (+p.reviewCount || 0) >= 20; }
+  // Structured data for the listings on screen (Google reads it): each provider as a Physician/Dentist/Attorney
+  function listingSchema(list) {
+    try {
+      const typeOf = p => p.type === 'attorney' ? 'Attorney' : /dent|orthodon|endodon|periodon|oral/i.test((p.specialties || []).join(' ') + ' ' + (p.credentials || '')) ? 'Dentist' : 'Physician';
+      const items = list.slice(0, 30).map((p, i) => {
+        const o = { '@type': typeOf(p), name: (p.practice || p.name), address: { '@type': 'PostalAddress', streetAddress: p.address || undefined, addressLocality: p.city, addressRegion: p.state, postalCode: p.zip, addressCountry: 'US' } };
+        if (p.type !== 'attorney') { o.employee = { '@type': 'Person', honorificPrefix: /^dr\.?\s/i.test(p.name) ? 'Dr.' : undefined, name: p.name.replace(/^dr\.?\s*/i, ''), honorificSuffix: p.credentials || undefined }; o.medicalSpecialty = (p.specialties || []).slice(0, 3); if (p.accepting) o.isAcceptingNewPatients = true; if (listOf(p.insurance).length) o.paymentAccepted = (p.selfPay ? ['Cash'] : []).concat(listOf(p.insurance)).join(', '); else if (p.selfPay) o.paymentAccepted = 'Cash'; }
+        if (p.telephone || p.phone) o.telephone = p.phone; if (/^https?:/i.test(p.website || '')) o.url = p.website; if (/^https:/i.test(p.photoUrl || '')) o.image = p.photoUrl;
+        if (+p.reviewRating && +p.reviewCount) o.aggregateRating = { '@type': 'AggregateRating', ratingValue: +p.reviewRating, reviewCount: +p.reviewCount };
+        if (p.languages) o.knowsLanguage = listOf(p.languages);
+        return { '@type': 'ListItem', position: i + 1, item: o };
+      });
+      let el = document.getElementById('dir-ld'); if (!el) { el = document.createElement('script'); el.type = 'application/ld+json'; el.id = 'dir-ld'; document.head.appendChild(el); }
+      el.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': [{ '@type': 'MedicalWebPage', audience: { '@type': 'Patient' } }, { '@type': 'ItemList', numberOfItems: items.length, itemListElement: items }] });
+    } catch (e) {}
+  }
   function card(p) {
     const initials = (p.name || '?').replace(/^(dr\.?|attorney)\s+/i, '').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
     const photo = /^https:\/\//i.test(p.photoUrl || '') ? `<img class="dir-avatar" src="${esc(p.photoUrl)}" alt="${esc(p.name)}" loading="lazy">` : `<div class="dir-avatar" aria-hidden="true">${esc(initials)}</div>`;
@@ -1026,6 +1045,10 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
         ${addr ? `<span>📍 ${esc(addr)}</span>` : ''}
         ${p.languages ? `<span>🗣️ ${esc(p.languages)}</span>` : ''}
         ${p.accepting ? `<span>✅ Accepting new ${p.type === 'attorney' ? 'clients' : 'patients'}</span>` : ''}
+        ${highlyRec(p) ? '<span>🏅 Highly recommended</span>' : ''}
+        ${p.telehealth ? `<span>💻 ${p.type === 'attorney' ? 'Virtual consultations' : 'Video visits'}</span>` : ''}
+        ${p.selfPay && p.type !== 'attorney' ? '<span>💵 Self-pay welcome</span>' : ''}
+        ${listOf(p.insurance).length && p.type !== 'attorney' ? `<span>🩺 Takes ${esc(listOf(p.insurance).slice(0, 3).join(', '))}${listOf(p.insurance).length > 3 ? ' +' + (listOf(p.insurance).length - 3) + ' more' : ''}</span>` : ''}
         ${reviewHTML(p)}
       </div>
       <div class="dir-actions">
@@ -1094,6 +1117,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     if (nearby.length && room) html += `<p class="dir-status" style="margin-top:26px">${exact.length ? 'More' : 'Closest'} in ${esc(stateName(st))}, nearest to ${esc(zipRaw)} first</p><div class="dir-results">${nearby.slice(0, room).map(card).join('')}</div>`;
     if (exact.length + nearby.length > 1) html = `<div class="rw-invite" style="margin:0 0 6px"><div style="display:flex;gap:12px;align-items:center"><div class="rw-face rpic" aria-hidden="true"><span class="rstage"><img class="rb" src="rachel/rachel-wsmn.jpg" alt=""><img class="rg" src="rachel/rachel-gap.png" alt=""><img class="rj" src="rachel/rachel-jaw.png" alt=""></span></div><p><b>Too many to choose from?</b> Rachel WebSwan already has your city, state and ZIP. Answer a few quick questions and she will pick your <b>5 best matches</b>.</p></div><button class="btn" type="button" data-rachel-from-search>Let Rachel pick my 5</button></div>` + html;
     out.innerHTML = html;
+    listingSchema(exact.concat(nearby));
   }
   window.WSMNFormValues = () => ({ type: typeSel.value, specialty: specSel.value, state: stateSel.value, city: cityIn.value.trim().replace(/\b\w/g, m => m.toUpperCase()), zip: /^\d{5}$/.test(zipIn.value.trim()) ? zipIn.value.trim() : '' });
   out.addEventListener('click', e => { if (e.target.closest('[data-rachel-from-search]') && window.WSMNRachelPrefill) window.WSMNRachelPrefill(window.WSMN_LAST_SEARCH); });
@@ -1188,6 +1212,8 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
       p.telehealth ? (p.type === 'attorney' ? '💻 Virtual consultations' : '💻 Telehealth visits') : '',
       p.freeConsult ? '🤝 Free consultation' : '',
       p.eveningWeekend ? '🌙 Evening / weekend hours' : '',
+      p.selfPay && p.type !== 'attorney' ? '💵 Welcomes self-pay / cash patients' : '',
+      highlyRec(p) ? '🏅 Highly recommended by patients' : '',
       p.languages ? `🗣️ ${esc(p.languages)}` : '',
       (p.feeTypes || []).length ? `💵 ${esc(p.feeTypes.join(', '))}` : ''
     ].filter(Boolean).map(f => `<li>${f}</li>`).join('');
@@ -1690,7 +1716,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   const QTX = {
     fr: {
       visit: ['S’agit-il d’un nouveau problème, d’un suivi, ou souhaitez-vous un deuxième avis ?', ['Nouveau problème', 'Suivi', 'Deuxième avis', 'Passer']],
-      insurance: ['Avez-vous une assurance santé ? Écrivez le nom de votre assurance ou choisissez une option.', ['Sans assurance / je paie moi-même', 'Medicare', 'Medicaid', 'Passer']],
+      insurance: ['Allez-vous payer comptant, ou avez-vous une assurance ? Si oui, écrivez le nom de votre assurance ou choisissez-la.', ['Je paie comptant / sans assurance', 'Medicare', 'Medicaid', 'Aetna', 'Cigna', 'UnitedHealthcare', 'Blue Cross Blue Shield', 'Delta Dental', 'Passer']],
       mode: ['Préférez-vous une consultation au cabinet ou une téléconsultation ?', ['Au cabinet', 'Téléconsultation', 'Peu importe']],
       lang: ['Dans quelle langue aimeriez-vous que votre {w} vous parle ?', ['Anglais', 'Espagnol', 'Créole haïtien', 'Français', 'Peu importe']],
       hours: ['Avez-vous besoin de rendez-vous en soirée ou le week-end ?', ['Oui, s’il vous plaît', 'Non, en semaine, ça me va']],
@@ -1705,7 +1731,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     },
     es: {
       visit: ['¿Es un problema nuevo, un tratamiento que ya está siguiendo o quiere una segunda opinión?', ['Problema nuevo', 'Tratamiento continuo', 'Segunda opinión', 'Omitir']],
-      insurance: ['¿Tiene seguro médico? Escriba el nombre de su plan o elija una opción.', ['Sin seguro / pago yo', 'Medicare', 'Medicaid', 'Omitir']],
+      insurance: ['¿Va a pagar en efectivo o tiene seguro médico? Si tiene seguro, escriba el nombre de su plan o elíjalo.', ['Pago en efectivo / sin seguro', 'Medicare', 'Medicaid', 'Aetna', 'Cigna', 'UnitedHealthcare', 'Blue Cross Blue Shield', 'Delta Dental', 'Omitir']],
       mode: ['¿Prefiere una consulta en persona o por video (telemedicina)?', ['En persona', 'Por video', 'Cualquiera']],
       lang: ['¿En qué idioma le gustaría que le hable su {w}?', ['Inglés', 'Español', 'Criollo haitiano', 'Francés', 'Cualquier idioma']],
       hours: ['¿Necesita citas en la noche o los fines de semana?', ['Sí, por favor', 'No, entre semana está bien']],
@@ -1720,7 +1746,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     },
     pt: {
       visit: ['É um problema novo, um acompanhamento ou você quer uma segunda opinião?', ['Problema novo', 'Acompanhamento', 'Segunda opinião', 'Pular']],
-      insurance: ['Você tem plano de saúde? Digite o nome do plano ou escolha uma opção.', ['Particular / sem plano', 'Medicare', 'Medicaid', 'Pular']],
+      insurance: ['Você vai pagar particular ou tem plano de saúde? Se tiver plano, digite o nome ou escolha.', ['Particular (pago à vista) / sem plano', 'Medicare', 'Medicaid', 'Aetna', 'Cigna', 'UnitedHealthcare', 'Blue Cross Blue Shield', 'Delta Dental', 'Pular']],
       mode: ['Você prefere consulta presencial ou por vídeo (telemedicina)?', ['Presencial', 'Por vídeo', 'Tanto faz']],
       lang: ['Em qual idioma você gostaria que o seu {w} falasse?', ['Inglês', 'Espanhol', 'Crioulo haitiano', 'Francês', 'Qualquer idioma']],
       hours: ['Você precisa de horário à noite ou no fim de semana?', ['Sim, por favor', 'Não, durante a semana está bom']],
@@ -1735,7 +1761,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     },
     ht: {
       visit: ['Èske se yon nouvo pwoblèm, yon swivi, oswa ou vle yon dezyèm opinyon?', ['Nouvo pwoblèm', 'Swivi', 'Dezyèm opinyon', 'Pase']],
-      insurance: ['Èske w gen asirans sante? Ekri non asirans ou, oswa chwazi youn anba a.', ['M peye pou kont mwen / m pa gen asirans', 'Medicare', 'Medicaid', 'Pase']],
+      insurance: ['Èske w ap peye kach, oswa w gen asirans? Si w gen asirans, ekri non l oswa chwazi l.', ['M peye kach / m pa gen asirans', 'Medicare', 'Medicaid', 'Aetna', 'Cigna', 'UnitedHealthcare', 'Blue Cross Blue Shield', 'Delta Dental', 'Pase']],
       mode: ['Èske w pito wè doktè a an pèsòn, oswa pa videyo?', ['An pèsòn', 'Pa videyo', 'Nenpòt']],
       lang: ['Ki lang ou ta renmen {w} a pale avè w?', ['Anglè', 'Panyòl', 'Kreyòl', 'Franse', 'Nenpòt lang']],
       hours: ['Èske w bezwen randevou nan aswè oswa nan wikenn?', ['Wi, tanpri', 'Non, nan semèn nan bon']],
@@ -2108,7 +2134,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   const QUESTIONS = {
     doctor: [
       { key: 'visit', q: 'Is this a new concern, ongoing care, or a second opinion?', opts: ['New concern', 'Ongoing care', 'Second opinion', 'Skip'] },
-      { key: 'insurance', q: 'Do you have health insurance? Type the name of your plan, or tap an option.', opts: ['Self-pay / no insurance', 'Medicare', 'Medicaid', 'Skip'], free: true },
+      { key: 'insurance', q: 'Will you be paying cash (self-pay), or do you have insurance? If you have insurance, type your plan or tap it.', opts: ['Paying cash / self-pay', 'Medicare', 'Medicaid', 'Aetna', 'Cigna', 'UnitedHealthcare', 'Blue Cross Blue Shield', 'Delta Dental', 'Skip'], free: true },
       { key: 'mode', q: 'Would you prefer an in-person visit or telehealth?', opts: ['In person', 'Telehealth', 'Either is fine'] },
       { key: 'lang', q: 'What language would you like your doctor to speak?', opts: ['English', 'Spanish', 'Haitian Creole', 'French', 'Any language'], free: true },
       { key: 'hours', q: 'Do you need evening or weekend appointments?', opts: ['Yes, please', 'No, weekdays are fine'] },
@@ -2169,12 +2195,14 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
   }
   // Only ask a question when the listed providers actually differ on it (keeps it short for the visitor)
   // Match-making: Rachel asks every question so she can count how many of the visitor's needs each provider meets
+  const isCash = v => /self|cash|efectivo|sin seguro|particular|sem plano|comptant|sans assurance|kach|peye pou kont|pa gen asirans/i.test(v || '');
+  const isSkipIns = v => /^(skip|omitir|pular|passer|pase)$/i.test(String(v || '').trim());
   function qRelevant(Q) {
     switch (Q.key) {
       case 'visit': return false;                      // the "tell me more" step already covers the reason for care
       case 'gender': return (S.top3 || []).some(v => /^Female or male/.test(v));
       case 'top': case 'mode': case 'rating': case 'consult': return false;   // covered by the 4 main criteria
-      case 'insurance': return (S.top3 || []).includes('Accepts my insurance');
+      case 'insurance': return S.type !== 'attorney';   // Tania, Nov 7: always ask doctors' patients cash or which insurance
       case 'lang': return (S.top3 || []).includes('Speaks my language');
       case 'fee': return (S.top3 || []).includes('Payment type');
       case 'hours': return S.type === 'attorney' ? (S.top3 || []).includes('Evening / virtual meetings') : false;
@@ -2312,7 +2340,8 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     const hits = [...new Set(kw.filter(w => hay.includes(' ' + w)))]; if (hits.length) { s += Math.min(hits.length * 6, 24); why.push('treats what you described'.replace('treats', p.type === 'attorney' ? 'handles' : 'treats')); }
     if (S.specialty && S.specialty !== '*' && (p.specialties || []).includes(S.specialty)) s += 20;
     const P = S.prefs;
-    if (P.insurance && !/self|skip/i.test(P.insurance)) { const ins = norm(P.insurance); if ((p.insuranceLower || []).some(i => i.includes(ins) || ins.includes(i))) { s += 18; why.push('accepts ' + P.insurance); } }
+    if (P.insurance && isCash(P.insurance)) { if (p.selfPay) { s += 18; why.push('welcomes self-pay patients'); } }
+    else if (P.insurance && !isSkipIns(P.insurance)) { const ins = norm(P.insurance); if ((p.insuranceLower || []).some(i => i.includes(ins) || ins.includes(i))) { s += 18; why.push('accepts ' + P.insurance); } }
     if (P.mode === 'Telehealth' && p.telehealth) { s += 12; why.push('offers telehealth'); }
     if (P.lang && !/any/i.test(P.lang) && !/^english$/i.test(P.lang)) { if (norm(p.languages).includes(norm(P.lang))) { s += 18; why.push('speaks ' + P.lang); } }
     if (/yes|evening|both/i.test(P.hours || '') && p.eveningWeekend) { s += 10; why.push('evening/weekend hours'); }
@@ -2339,7 +2368,8 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     const STOP = /^(pain|pains|help|need|needs|looking|have|having|doctor|doctors|attorney|lawyer|lawyers|someone|good|best|near|with|that|this|from|about|very|really|want|would|like|please|problem|problems|issue|issues|since|years|year|months|weeks|days|time|some|more|much|lots|also|been|after|before|they|their|there|what|when|where|which|your|mine|myself|family|need|just|still)$/;
     const kw = norm(S.need).split(' ').filter(w => w.length > 3 && !STOP.test(w));
     if (kw.length) { const hay = ' ' + norm([(p.conditions || ''), (p.bio || ''), (p.specialties || []).join(' ')].join(' ')) + ' '; add('need', kw.some(w => hay.includes(' ' + w)), att ? 'handles what you described' : 'treats what you described'); }
-    if (!att && P.insurance && !/self|skip/i.test(P.insurance)) { const ins = norm(P.insurance); add('insurance', (p.insuranceLower || []).some(i => i.includes(ins) || ins.includes(i)), 'accepts ' + P.insurance); }
+    if (!att && P.insurance && isCash(P.insurance)) add('insurance', !!p.selfPay, 'welcomes self-pay patients');
+    else if (!att && P.insurance && !isSkipIns(P.insurance)) { const ins = norm(P.insurance); add('insurance', (p.insuranceLower || []).some(i => i.includes(ins) || ins.includes(i)), 'accepts ' + P.insurance); }
     const wantTele = P.mode === 'Telehealth' || P.top === 'Telehealth visits';
     if (!att && wantTele) add('mode', p.telehealth, 'offers telehealth');
     if (P.lang && !/any/i.test(P.lang) && !/^english$/i.test(P.lang)) add('lang', norm(p.languages).includes(norm(P.lang)), 'speaks ' + P.lang);
@@ -2631,7 +2661,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     $('adm-state').value = p.state || '';
     $('adm-plan').value = ['found', 'leads', 'premium'].includes(p.plan) ? p.plan : 'found';
     $('adm-active').checked = !!p.active; $('adm-featured').checked = !!p.featured; $('adm-accepting').checked = p.accepting !== false;
-    $('adm-tele').checked = !!p.telehealth; $('adm-free').checked = !!p.freeConsult; $('adm-eve').checked = !!p.eveningWeekend;
+    $('adm-tele').checked = !!p.telehealth; $('adm-free').checked = !!p.freeConsult; $('adm-eve').checked = !!p.eveningWeekend; $('adm-cash').checked = !!p.selfPay;
     document.querySelectorAll('.adm-fee').forEach(c => { c.checked = (p.feeTypes || []).includes(c.value); });
     gallery = (p.gallery || []).filter(g => /^data:image\//.test(g) || /^https:\/\//.test(g)).slice(0, 3); drawGal();
     $('adm-form-title').textContent = 'Edit listing: ' + (p.name || ''); $('adm-save').textContent = 'Save changes';
@@ -2652,7 +2682,7 @@ html.ada-dyslexic body,html.ada-dyslexic *{font-family:Comic Sans MS,Comic Sans,
     data.type = $('adm-type').value; data.state = $('adm-state').value; data.specialties = chips.slice();
     data.plan = $('adm-plan').value;
     data.active = $('adm-active').checked; data.featured = $('adm-featured').checked; data.accepting = $('adm-accepting').checked;
-    data.telehealth = $('adm-tele').checked; data.freeConsult = $('adm-free').checked; data.eveningWeekend = $('adm-eve').checked;
+    data.telehealth = $('adm-tele').checked; data.freeConsult = $('adm-free').checked; data.eveningWeekend = $('adm-eve').checked; data.selfPay = $('adm-cash').checked;
     data.feeTypes = [...document.querySelectorAll('.adm-fee:checked')].map(c => c.value);
     data.insuranceLower = data.insurance.split(',').map(norm).filter(Boolean).slice(0, 40);
     data.zip = (data.zip.match(/\d{5}/) || [data.zip])[0];
