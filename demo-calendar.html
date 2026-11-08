@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Book an appointment (demo) | WebSwan Media Network</title>
+<style>
+  body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;color:#18364a;background:#f5fafd}
+  .wrap{max-width:640px;margin:0 auto;padding:18px}
+  h1{font-size:20px;margin:0 0 4px;color:#082a48}
+  .sub{color:#5c7180;margin:0 0 14px;font-size:14px}
+  .demo{background:#ffe9a8;color:#3a2a00;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;margin-bottom:12px}
+  .days{display:flex;gap:8px;overflow:auto;padding-bottom:6px}
+  .day{flex:0 0 auto;border:1.5px solid #cfe2ea;background:#fff;border-radius:12px;padding:8px 12px;cursor:pointer;text-align:center;min-width:74px}
+  .day b{display:block;font-size:16px}
+  .day[aria-pressed="true"]{border-color:#1b70c2;background:#e8f3fc}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:14px 0}
+  .slot{border:1.5px solid #9fd5ee;background:#fff;border-radius:10px;padding:10px;font-weight:700;color:#0c3a61;cursor:pointer}
+  .slot[aria-pressed="true"]{background:#1b70c2;color:#fff;border-color:#1b70c2}
+  form{display:grid;gap:8px;background:#fff;border:1px solid #dcebf1;border-radius:14px;padding:14px}
+  input{padding:10px;border:1.5px solid #cfe2ea;border-radius:10px;font-size:15px}
+  button.go{background:#082a48;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:700;font-size:15px;cursor:pointer}
+  .done{background:#e7f7ef;border:1px solid #a6e0c2;border-radius:14px;padding:16px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo">🎬 Demo calendar: this shows how a patient books with an $89 member. No real appointment is made.</div>
+  <h1 id="who">Book an appointment</h1>
+  <p class="sub">Choose a day and a time.</p>
+  <div class="days" id="days" role="group" aria-label="Choose a day"></div>
+  <div class="slots" id="slots" role="group" aria-label="Choose a time"></div>
+  <form id="f" hidden>
+    <b id="pick"></b>
+    <input id="nm" placeholder="Your name" autocomplete="name" required maxlength="80" aria-label="Your name">
+    <input id="ph" placeholder="Phone number" autocomplete="tel" inputmode="tel" required maxlength="20" aria-label="Phone number">
+    <button class="go" type="submit">Book this time</button>
+  </form>
+  <div id="out" role="status" aria-live="polite"></div>
+</div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), name = (q.get('n') || 'the doctor').slice(0, 80);
+  document.getElementById('who').textContent = 'Book with ' + name;
+  var days = [], d = new Date(); d.setHours(12, 0, 0, 0);
+  while (days.length < 6) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0) days.push(new Date(d)); }
+  var times = ['9:00 AM', '9:30 AM', '10:30 AM', '11:00 AM', '1:00 PM', '2:30 PM', '3:00 PM', '4:30 PM'];
+  var D = document.getElementById('days'), S = document.getElementById('slots'), F = document.getElementById('f'), chosen = {};
+  function seeded(i, t) { return ((i * 7 + t.length * 3 + name.length) % 3) !== 0; } // some times look taken
+  function drawSlots(i) {
+    S.innerHTML = ''; F.hidden = true;
+    times.forEach(function (t, k) {
+      if (!seeded(i + k, t)) return;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'slot'; b.textContent = t; b.setAttribute('aria-pressed', 'false');
+      b.onclick = function () { [].forEach.call(S.children, function (x) { x.setAttribute('aria-pressed', 'false'); }); b.setAttribute('aria-pressed', 'true'); chosen.time = t; F.hidden = false;
+        document.getElementById('pick').textContent = chosen.day + ' at ' + t; document.getElementById('nm').focus(); };
+      S.appendChild(b);
+    });
+  }
+  days.forEach(function (x, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'day'; b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    var label = x.toLocaleDateString('en-US', { weekday: 'short' }), num = x.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    b.innerHTML = label + '<b>' + num + '</b>';
+    b.onclick = function () { [].forEach.call(D.children, function (y) { y.setAttribute('aria-pressed', 'false'); }); b.setAttribute('aria-pressed', 'true'); chosen.day = label + ', ' + num; drawSlots(i); };
+    D.appendChild(b);
+    if (i === 0) chosen.day = label + ', ' + num;
+  });
+  drawSlots(0);
+  F.onsubmit = function (e) {
+    e.preventDefault();
+    var n = document.getElementById('nm').value.trim(), p = document.getElementById('ph').value.replace(/\D/g, '');
+    if (!n || p.length < 10) { document.getElementById('out').textContent = 'Please add your name and a 10-digit phone number.'; return; }
+    F.hidden = true; S.innerHTML = ''; D.innerHTML = '';
+    document.getElementById('out').innerHTML = '<div class="done">✅ Booked (demo): ' + chosen.day + ' at ' + chosen.time + ' with ' + name.replace(/[<>&"]/g, '') + '.<br>On the live site, the appointment goes straight to the office\'s calendar.</div>';
+  };
+})();
+</script>
+</body>
+</html>
